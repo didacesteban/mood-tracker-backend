@@ -1,0 +1,10 @@
+[user]
+	name = Didac
+	email = didacesteban@gmail.com
+	signingkey = /Users/didac/.ssh/id_ed25519.pub
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
+[tag]
+	gpgSign = true
