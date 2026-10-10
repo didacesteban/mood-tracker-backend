@@ -3,7 +3,7 @@
 Living record of the scope, architectural decisions, and their rationale.
 Update it whenever a decision is made or changed. Each decision lists the alternatives considered so the reasoning stays visible for learning.
 
-_Last updated: 2026-10-04_
+_Last updated: 2026-10-10_
 
 ---
 
@@ -101,4 +101,6 @@ _Last updated: 2026-10-04_
 ## Progress
 
 - [x] Scope and core decisions (D1–D6)
-- [ ] Step 1: scaffold NestJS project + Postgres in Docker
+- [x] Step 1: scaffold NestJS project + Postgres 17 in Docker, validated env config (class-validator), TypeORM via `forRootAsync` + typed `ConfigService` (2026-10-10)
+  - [ ] Follow-up: remove raw env dump from the validation error message (leaks secrets)
+- [ ] Step 2: `User` entity + first migration (standalone DataSource for TypeORM CLI)

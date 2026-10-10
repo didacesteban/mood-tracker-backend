@@ -12,7 +12,6 @@ export class EnvironmentVariables {
     @IsEnum(Environment)
     NODE_ENV: Environment = Environment.Development;
 
-    @IsNumber()
     @IsOptional()
     @IsInt()
     @Min(1)
@@ -63,7 +62,7 @@ export function validate(config: Record<string, unknown>): EnvironmentVariables 
     const validatedConfig = plainToInstance(EnvironmentVariables, config, { enableImplicitConversion: true });
     const errors = validateSync(validatedConfig, { skipMissingProperties: false });
     if (errors.length > 0) {
-        throw new Error(errors.toString() + ' - ' + JSON.stringify(config));
+        throw new Error(errors.toString());
     }
     if (validatedConfig.JWT_ACCESS_SECRET === validatedConfig.JWT_REFRESH_SECRET) {
         throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must be different');
