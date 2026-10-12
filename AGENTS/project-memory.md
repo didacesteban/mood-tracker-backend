@@ -3,7 +3,7 @@
 Living record of the scope, architectural decisions, and their rationale.
 Update it whenever a decision is made or changed. Each decision lists the alternatives considered so the reasoning stays visible for learning.
 
-_Last updated: 2026-10-10_
+_Last updated: 2026-10-12_
 
 ---
 
@@ -43,6 +43,13 @@ _Last updated: 2026-10-10_
 - Passwords hashed with argon2 (or bcrypt). Generic "invalid credentials" errors.
 - Planned for later: refresh token rotation + reuse detection.
 
+### D4b — Migrations & schema conventions
+- TypeORM CLI runs against **compiled `dist/`** (no ts-node/tsx: ESM + decorator-metadata issues). npm scripts build first.
+- Snake_case via explicit `name` on each column (no naming strategy to keep in sync between app and CLI).
+- Every column has an explicit type; all timestamps are `timestamptz`.
+- Case-insensitive email: normalized (trim + lowercase) in the app + plain UNIQUE constraint.
+- Never edit a migration that has run outside your machine — add a new one.
+
 ### D5 — Write endpoints: `POST /moods` + `PATCH /moods/:id`
 - `POST /moods` creates today's entry. A second POST on the same day → **409 Conflict** (map the unique-constraint violation, don't pre-check only — race conditions).
 - `PATCH /moods/:id` edits an entry only if it **belongs to the caller** (otherwise 404, to avoid leaking existence) **and** its `entry_date` equals the caller's current local date (otherwise 403/422).
@@ -58,7 +65,7 @@ _Last updated: 2026-10-10_
 
 ## Conceptual data model
 
-- **users** — id (UUID), email (unique, case-insensitive), password_hash (nullable, for future OAuth-only users), email_verified_at (nullable), timezone, created_at, updated_at
+- **users** — id (UUID), display_name (varchar(100), nullable — optional at registration), email (unique, case-insensitive; normalized to lowercase in the app), password_hash (nullable, for future OAuth-only users), email_verified_at (nullable), timezone, created_at, updated_at
 - **refresh_tokens** — id, user_id (FK, cascade delete), token_hash, expires_at, revoked_at (nullable), created_at
 - **mood_entries** — id, user_id (FK, cascade delete), entry_date (`DATE`), score (smallint, CHECK 0–10), note (text, nullable; length capped in DTO), created_at, updated_at
   - UNIQUE (user_id, entry_date) — enforces one entry per day and serves as the index for range queries.
@@ -102,5 +109,7 @@ _Last updated: 2026-10-10_
 
 - [x] Scope and core decisions (D1–D6)
 - [x] Step 1: scaffold NestJS project + Postgres 17 in Docker, validated env config (class-validator), TypeORM via `forRootAsync` + typed `ConfigService` (2026-10-10)
-  - [ ] Follow-up: remove raw env dump from the validation error message (leaks secrets)
-- [ ] Step 2: `User` entity + first migration (standalone DataSource for TypeORM CLI)
+  - [x] Follow-up: removed raw env dump from the validation error message (leaked secrets)
+- [x] Step 2: `User` entity + `CreateUsers` migration; standalone CLI DataSource (`src/database/data-source.ts`, reuses `validate`, explicit entity list); migrations run from compiled `dist/` via `migration:*` npm scripts (2026-10-12)
+  - Deploy note: UUID default is `uuid_generate_v4()` (needs `uuid-ossp` extension, auto-created locally as superuser). Re-check on the production host; Postgres 13+ built-in `gen_random_uuid()` is the alternative.
+- [ ] Step 3: Auth — `RefreshToken` entity + migration, register / login / refresh / logout, JWT guard, `@CurrentUser()`

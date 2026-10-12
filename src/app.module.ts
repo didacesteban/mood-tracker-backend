@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnvironmentVariables, validate } from './config/env.validation.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EnvironmentVariables, validate } from './config/env.validation.js';
         synchronize: false,
       }),
     }),
+    UsersModule,
   ],
   controllers: [],
   providers: [],
